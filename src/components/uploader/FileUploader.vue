@@ -9,7 +9,7 @@ const { uploadDocument, loading, error } = useDocument()
 const fileInput = ref<HTMLInputElement | null>(null)
 const dragActive = ref(false)
 
-const supportedFormats = ['.txt', '.md', '.markdown']
+const supportedFormats = ['.txt', '.md', '.markdown', '.pdf', '.doc', '.docx']
 
 const handleFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -121,8 +121,7 @@ const triggerFileInput = () => {
       </div>
 
       <div class="mt-8 text-center text-sm text-gray-600">
-        <p>支持的格式: Markdown, TXT</p>
-        <p class="text-xs mt-2">更多格式敬请期待</p>
+        <p>支持的格式: PDF, Word (DOC/DOCX), Markdown, TXT</p>
       </div>
     </div>
   </div>

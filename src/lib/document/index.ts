@@ -2,8 +2,12 @@ import type { DocumentParser } from './parser'
 import type { NormalizedDocument } from '@/types'
 import { MarkdownParser } from './markdown'
 import { TxtParser } from './txt'
+import { PdfParser } from './pdf'
+import { DocxParser } from './docx'
 
 const parsers: DocumentParser[] = [
+  new PdfParser(),
+  new DocxParser(),
   new MarkdownParser(),
   new TxtParser(),
 ]
@@ -24,6 +28,9 @@ export async function parseDocument(
 
 export function getSupportedMimeTypes(): string[] {
   return [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword',
     'text/plain',
     'text/markdown',
   ]
