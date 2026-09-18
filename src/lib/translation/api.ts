@@ -1,11 +1,41 @@
 import type { TranslationRequest, TranslationResponse } from './types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
+// 获取 API 基础 URL
+function getAPIBaseUrl(): string {
+  // 优先使用环境变量
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
+  }
+
+  // 开发环境默认使用 localhost:3000
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3000/api'
+  }
+
+  // 生产环境使用当前域名的 /api 路径
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol
+    const host = window.location.host
+    return `${protocol}//${host}/api`
+  }
+
+  return '/api'
+}
+
+const API_BASE_URL = getAPIBaseUrl()
+
+// 打印 API 地址便于调试
+if (typeof window !== 'undefined') {
+  console.log('Translation API Base URL:', API_BASE_URL)
+}
 
 export class TranslationAPI {
   static async translate(request: TranslationRequest): Promise<TranslationResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/translate`, {
+      const url = `${API_BASE_URL}/translate`
+      console.log('Calling translation API:', url, request)
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -14,7 +44,9 @@ export class TranslationAPI {
       })
 
       if (!response.ok) {
-        throw new Error(`Translation API error: ${response.statusText}`)
+        const errorText = await response.text()
+        console.error('Translation API error:', response.status, errorText)
+        throw new Error(`Translation API error: ${response.statusText}. Details: ${errorText}`)
       }
 
       return await response.json()
@@ -30,7 +62,8 @@ export class TranslationAPI {
     targetLanguage: string,
   ): Promise<string[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/translate/batch`, {
+      const url = `${API_BASE_URL}/translate/batch`
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +76,9 @@ export class TranslationAPI {
       })
 
       if (!response.ok) {
-        throw new Error(`Batch translation API error: ${response.statusText}`)
+        const errorText = await response.text()
+        console.error('Batch translation API error:', response.status, errorText)
+        throw new Error(`Batch translation API error: ${response.statusText}. Details: ${errorText}`)
       }
 
       const data = await response.json()

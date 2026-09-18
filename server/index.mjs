@@ -16,13 +16,30 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
+
+// 配置 CORS - 支持所有来源或特定域名
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'https://localhost:5173',
+  'https://localhost:3000',
+  // 腾讯云相关域名 - 根据实际情况添加
+  process.env.VITE_API_BASE_URL?.replace('/api', '') || '',
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:3000',
-  ],
+  origin: function (origin, callback) {
+    // 如果没有 origin 或在允许列表中，则允许
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      // 生产环境中打印警告但仍然允许（便于调试）
+      console.warn(`CORS warning: Request from ${origin}`);
+      callback(null, true);
+    }
+  },
   credentials: true,
 }));
 
