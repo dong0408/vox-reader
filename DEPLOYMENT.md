@@ -193,6 +193,63 @@ server {
    # 直接查看输出日志
    ```
 
+### HTML 错误："Unexpected token '<', "<!doctype "... is not valid JSON"
+
+**症状：** 翻译时报告 HTML 解析错误
+
+**原因：** 前端收到 HTML 响应而不是 JSON，通常表示：
+1. 后端服务未运行
+2. API 请求路由配置错误
+3. Nginx 或反向代理配置不正确
+4. API 基础 URL 配置错误
+
+**解决方案：**
+
+**方案 A：检查后端服务**
+```bash
+# 1. 确认后端运行
+lsof -i :3000
+
+# 2. 测试 API 是否响应
+curl http://localhost:3000/api/health
+
+# 输出应该是 JSON：
+# {"status":"ok","translationServiceAvailable":true}
+```
+
+**方案 B：检查 Nginx 配置（如果使用了 Nginx）**
+
+确保 Nginx 正确配置了 API 代理：
+```nginx
+location /api/ {
+    proxy_pass http://localhost:3000/api/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+参考完整配置：`nginx.conf.example`
+
+**方案 C：检查前端构建时的 API 配置**
+
+在构建前端时，确保 `VITE_API_BASE_URL` 环境变量正确：
+```bash
+# 如果未设置，前端会使用相对路径 /api
+# 这依赖于 Nginx 或其他反向代理将 /api 转发到后端
+
+# 如果要指定完整的 API URL（不推荐用于生产）：
+VITE_API_BASE_URL=https://yourdomain.com/api npm run build
+```
+
+**方案 D：使用诊断脚本**
+
+运行诊断脚本快速定位问题：
+```bash
+chmod +x diagnose.sh
+./diagnose.sh
+```
+
 ### CORS 错误
 
 **症状：** 浏览器报 "Access to XMLHttpRequest has been blocked by CORS policy"
