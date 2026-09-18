@@ -4,8 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDocumentStore } from '@/stores'
 import { chunkDocument } from '@/lib/chunker/textChunker'
 import DocumentReader from '@/components/reader/DocumentReader.vue'
-import AudioPlayer from '@/components/player/AudioPlayer.vue'
 import TextTranslator from '@/components/translator/TextTranslator.vue'
+
+interface WordRecord {
+  word: string
+  meaning: string
+  timestamp: number
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -14,8 +19,10 @@ const store = useDocumentStore()
 const documentId = computed(() => route.params.id as string)
 const segments = ref<any[]>([])
 const currentSegmentIndex = ref(0)
-const showPlayer = ref(false)
 const showTranslator = ref(false)
+const translatorRef = ref<InstanceType<typeof TextTranslator> | null>(null)
+const wordRecords = ref<WordRecord[]>([])
+const selectedWord = ref<WordRecord | null>(null)
 
 const currentSegment = computed(() => {
   return segments.value[currentSegmentIndex.value]
@@ -44,6 +51,32 @@ const handleSegmentChange = (index: number) => {
   if (index >= 0 && index < segments.value.length) {
     currentSegmentIndex.value = index
   }
+}
+
+const handleWordAdded = (word: WordRecord) => {
+  const records = translatorRef.value?.wordRecords
+  if (records) {
+    wordRecords.value = [...records]
+  }
+  selectedWord.value = word
+}
+
+const deleteWordRecord = (index: number) => {
+  if (translatorRef.value?.deleteWordRecord) {
+    translatorRef.value.deleteWordRecord(index)
+  }
+  const records = translatorRef.value?.wordRecords
+  if (records) {
+    wordRecords.value = [...records]
+  }
+}
+
+const clearWordRecords = () => {
+  if (translatorRef.value?.clearWordRecords) {
+    translatorRef.value.clearWordRecords()
+  }
+  wordRecords.value = []
+  selectedWord.value = null
 }
 </script>
 
@@ -103,9 +136,11 @@ const handleSegmentChange = (index: number) => {
 
               <div v-if="showTranslator" class="mt-4">
                 <TextTranslator
+                  ref="translatorRef"
                   :text="currentSegment?.text || ''"
                   defaultSourceLanguage="auto"
                   defaultTargetLanguage="en"
+                  @wordAdded="handleWordAdded"
                 />
               </div>
             </div>
@@ -141,13 +176,6 @@ const handleSegmentChange = (index: number) => {
               >
                 下一段 ▶
               </button>
-
-              <button
-                @click="showPlayer = !showPlayer"
-                class="flex-1 ml-auto px-4 py-2 rounded bg-primary text-white hover:bg-opacity-90 transition"
-              >
-                {{ showPlayer ? '🔙 隐藏' : '🎵 播放' }}
-              </button>
             </div>
           </div>
 
@@ -156,22 +184,74 @@ const handleSegmentChange = (index: number) => {
           </div>
         </div>
 
-        <!-- 播放器（右侧） -->
+        <!-- 单词记录面板（右侧） -->
         <div v-if="segments.length > 0" class="lg:sticky lg:top-8">
-          <AudioPlayer
-            v-if="showPlayer"
-            :segments="segments"
-            :current-segment-index="currentSegmentIndex"
-            @segment-change="handleSegmentChange"
-          />
-          <div v-else class="card text-center text-gray-500 py-8">
-            <p class="mb-4">点击"显示播放器"开始播放</p>
-            <button
-              @click="showPlayer = true"
-              class="px-4 py-2 rounded bg-primary text-white hover:bg-opacity-90 transition"
-            >
-              打开播放器
-            </button>
+          <div class="card space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-gray-900">
+                📚 单词记录
+              </h3>
+              <button
+                v-if="wordRecords.length > 0"
+                @click="clearWordRecords"
+                class="px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition"
+              >
+                清空
+              </button>
+            </div>
+
+            <div v-if="wordRecords.length === 0" class="text-center text-gray-500 py-8">
+              <p class="mb-2">双击翻译框中的单词</p>
+              <p class="text-sm">即可添加到记录</p>
+            </div>
+
+            <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+              <div
+                v-for="(record, index) in wordRecords"
+                :key="record.timestamp"
+                :class="[
+                  'p-3 rounded-lg border-2 cursor-pointer transition',
+                  selectedWord === record
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
+                ]"
+                @click="selectedWord = record"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 break-words">
+                      {{ record.word }}
+                    </p>
+                    <p class="text-sm text-gray-600 break-words">
+                      {{ record.meaning }}
+                    </p>
+                  </div>
+                  <button
+                    @click.stop="deleteWordRecord(index)"
+                    class="flex-shrink-0 px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition"
+                  >
+                    删除
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 选中单词的详细信息 -->
+            <div v-if="selectedWord" class="border-t pt-4">
+              <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                <p class="text-xs text-gray-600 font-medium mb-2">选中单词详情</p>
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-xs text-gray-500">原文</p>
+                    <p class="text-lg font-bold text-blue-600">{{ selectedWord.word }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">中文意思</p>
+                    <p class="text-gray-700">{{ selectedWord.meaning }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
