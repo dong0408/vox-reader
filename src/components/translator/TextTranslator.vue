@@ -108,8 +108,20 @@ const playText = async (type: 'source' | 'target') => {
         currentAudio.value = null
         URL.revokeObjectURL(audioUrl)
       }
+      audio.onerror = () => {
+        playingSource.value = null
+        currentAudio.value = null
+        URL.revokeObjectURL(audioUrl)
+      }
       currentAudio.value = audio
-      audio.play()
+      try {
+        await audio.play()
+      } catch (playErr) {
+        console.error('Audio play error:', playErr)
+        playingSource.value = null
+        currentAudio.value = null
+        URL.revokeObjectURL(audioUrl)
+      }
     }
   } catch (err) {
     console.error('TTS error:', err)
