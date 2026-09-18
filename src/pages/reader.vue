@@ -5,6 +5,7 @@ import { useDocumentStore } from '@/stores'
 import { chunkDocument } from '@/lib/chunker/textChunker'
 import DocumentReader from '@/components/reader/DocumentReader.vue'
 import AudioPlayer from '@/components/player/AudioPlayer.vue'
+import TextTranslator from '@/components/translator/TextTranslator.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,6 +15,7 @@ const documentId = computed(() => route.params.id as string)
 const segments = ref<any[]>([])
 const currentSegmentIndex = ref(0)
 const showPlayer = ref(false)
+const showTranslator = ref(false)
 
 const currentSegment = computed(() => {
   return segments.value[currentSegmentIndex.value]
@@ -88,6 +90,24 @@ const handleSegmentChange = (index: number) => {
               <p class="text-gray-700 leading-relaxed border-l-4 border-gray-400 pl-3">
                 {{ currentSegment?.text }}
               </p>
+            </div>
+
+            <!-- 翻译器 -->
+            <div class="border-t pt-4">
+              <button
+                @click="showTranslator = !showTranslator"
+                class="flex items-center gap-2 px-4 py-2 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition font-medium"
+              >
+                {{ showTranslator ? '🔽' : '▶' }} 翻译文本
+              </button>
+
+              <div v-if="showTranslator" class="mt-4">
+                <TextTranslator
+                  :text="currentSegment?.text || ''"
+                  defaultSourceLanguage="auto"
+                  defaultTargetLanguage="en"
+                />
+              </div>
             </div>
 
             <!-- 进度条 -->
