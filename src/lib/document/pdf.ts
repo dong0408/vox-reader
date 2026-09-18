@@ -31,10 +31,11 @@ export class PdfParser implements DocumentParser {
           if (!text) continue
 
           // Detect new paragraphs based on vertical position changes
-          if (currentY > 0 && Math.abs(item.y - currentY) > 5 && currentParagraph.trim()) {
+          const itemY = (item as any).y || 0
+          if (currentY > 0 && Math.abs(itemY - currentY) > 5 && currentParagraph.trim()) {
             blocks.push({
               id: `block_${blockIndex++}`,
-              type: 'paragraph',
+              type: 'paragraph' as const,
               text: currentParagraph.trim(),
               page: pageNum,
             })
@@ -42,14 +43,14 @@ export class PdfParser implements DocumentParser {
           }
 
           currentParagraph += (currentParagraph ? ' ' : '') + text
-          currentY = item.y
+          currentY = itemY
         }
       }
 
       if (currentParagraph.trim()) {
         blocks.push({
           id: `block_${blockIndex++}`,
-          type: 'paragraph',
+          type: 'paragraph' as const,
           text: currentParagraph.trim(),
           page: pageNum,
         })
@@ -62,7 +63,7 @@ export class PdfParser implements DocumentParser {
       sourceType: 'pdf',
       blocks: blocks.length > 0 ? blocks : [{
         id: 'block_0',
-        type: 'paragraph',
+        type: 'paragraph' as const,
         text: 'No text content found in PDF',
       }],
       createdAt: new Date().toISOString(),

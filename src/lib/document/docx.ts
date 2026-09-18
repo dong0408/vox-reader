@@ -1,6 +1,6 @@
 import type { DocumentParser, FileMetadata } from './parser'
 import type { NormalizedDocument } from '@/types'
-import { convertArrayBuffer } from 'mammoth'
+import mammoth from 'mammoth'
 
 export class DocxParser implements DocumentParser {
   supports(mimeType: string): boolean {
@@ -16,7 +16,7 @@ export class DocxParser implements DocumentParser {
     }
 
     try {
-      const result = await convertArrayBuffer({ arrayBuffer: file })
+      const result = await (mammoth as any).convertToHtml({ arrayBuffer: file })
       const html = result.value
 
       // Convert HTML to plain text paragraphs
