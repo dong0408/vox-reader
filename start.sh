@@ -89,7 +89,7 @@ case $MODE in
         ;;
     "frontend")
         print_status "启动前端服务 (端口 5173)..."
-        npx vite preview --host
+        npx vite preview --host 0.0.0.0
         ;;
     "all")
         print_status "同时启动前端和后端..."

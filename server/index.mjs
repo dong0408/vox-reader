@@ -241,8 +241,8 @@ app.get('/api/health', (req, res) => {
 
 // Start server
 initTranslationService();
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📝 Translation API: http://localhost:${PORT}/api/translate`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
+  console.log(`📝 Translation API: http://0.0.0.0:${PORT}/api/translate`);
+  console.log(`🏥 Health check: http://0.0.0.0:${PORT}/api/health`);
 });
