@@ -1,0 +1,24 @@
+component: scf
+name: vox-reader-api
+org: default
+app: vox-reader
+
+inputs:
+  src:
+    src: ./api
+  name: vox-reader-translate
+  namespace: default
+  description: Translation API for vox-reader
+  handler: translate/index.main_handler
+  runtime: nodejs18.x
+  memorySize: 256
+  timeout: 30
+  environment:
+    TENCENT_CLOUD_SECRET_ID: ${env.TENCENT_CLOUD_SECRET_ID}
+    TENCENT_CLOUD_SECRET_KEY: ${env.TENCENT_CLOUD_SECRET_KEY}
+  events:
+    - http:
+        path: /api/translate
+        method:
+          - POST
+        cors: true

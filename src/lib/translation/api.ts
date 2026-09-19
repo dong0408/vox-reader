@@ -12,7 +12,7 @@ function getAPIBaseUrl(): string {
     return 'http://localhost:3000/api'
   }
 
-  // 生产环境使用相对路径 /api（依赖 Nginx 或其他反向代理）
+  // 生产环境使用云函数或 /api 路径
   return '/api'
 }
 
