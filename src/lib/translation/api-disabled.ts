@@ -14,8 +14,8 @@ export class TranslationAPI {
 
   static async batchTranslate(
     texts: string[],
-    sourceLanguage: string,
-    targetLanguage: string,
+    _sourceLanguage: string,
+    _targetLanguage: string,
   ): Promise<string[]> {
     // 临时返回原文
     return texts
