@@ -1,0 +1,54 @@
+{
+  "/Users/dong/myProject/mcp_study/audio_title/vox-reader/serverless.yml": {
+    "versionFramework": "4.42.0",
+    "servicePath": "/Users/dong/myProject/mcp_study/audio_title/vox-reader/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "component": "scf",
+      "name": "vox-reader-api",
+      "org": "default",
+      "app": "vox-reader",
+      "inputs": {
+        "src": {
+          "src": "./api"
+        },
+        "name": "vox-reader-translate",
+        "namespace": "default",
+        "description": "Translation API for vox-reader",
+        "handler": "translate/index.main_handler",
+        "runtime": "nodejs18.x",
+        "memorySize": 256,
+        "timeout": 30,
+        "environment": {
+          "TENCENT_CLOUD_SECRET_ID": "<REDACTED>",
+          "TENCENT_CLOUD_SECRET_KEY": "<REDACTED>"
+        },
+        "events": [
+          {
+            "http": {
+              "path": "/api/translate",
+              "method": [
+                "POST"
+              ],
+              "cors": true
+            }
+          }
+        ]
+      }
+    },
+    "error": {
+      "message": "You must sign in or use a license key with Serverless Framework V.4 and later versions. Please use \"serverless login\".",
+      "stack": "Error: You must sign in or use a license key with Serverless Framework V.4 and later versions. Please use \"serverless login\".\n    at Authentication.getAuthenticatedData (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:2292:3023)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async Authentication.authenticate (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:2295:4124)\n    at async TraditionalRunner.resolveVariablesAndAuthenticate (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:2303:2424)\n    at async TraditionalRunner.run (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:3256:26350)\n    at async route (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:3784:3725)\n    at async Object.run (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:3785:3955)\n    at async run2 (file:///Users/dong/.serverless/releases/4.42.0/package/dist/sf-core.js:3785:5119)"
+    },
+    "serviceRawFile": "component: scf\nname: vox-reader-api\norg: default\napp: vox-reader\n\ninputs:\n  src:\n    src: ./api\n  name: vox-reader-translate\n  namespace: default\n  description: Translation API for vox-reader\n  handler: translate/index.main_handler\n  runtime: nodejs18.x\n  memorySize: 256\n  timeout: 30\n  environment:\n    TENCENT_CLOUD_SECRET_ID: ${env.TENCENT_CLOUD_SECRET_ID}\n    TENCENT_CLOUD_SECRET_KEY: ${env.TENCENT_CLOUD_SECRET_KEY}\n  events:\n    - http:\n        path: /api/translate\n        method:\n          - POST\n        cors: true\n",
+    "command": [
+      "info"
+    ],
+    "options": {},
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}

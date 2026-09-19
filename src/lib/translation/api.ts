@@ -4,15 +4,20 @@ import type { TranslationRequest, TranslationResponse } from './types'
 function getAPIBaseUrl(): string {
   // 优先使用环境变量
   if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL
+    const url = import.meta.env.VITE_API_BASE_URL
+    console.log('✓ Using VITE_API_BASE_URL:', url)
+    return url
   }
 
   // 开发环境默认使用 localhost:3000
   if (import.meta.env.DEV) {
+    console.log('✓ Development mode: using localhost:3000/api')
     return 'http://localhost:3000/api'
   }
 
-  // 生产环境使用云函数或 /api 路径
+  // 生产环境使用相对路径 /api
+  // 依赖 EdgeOne 或其他反向代理将 /api/* 转发到后端
+  console.log('✓ Production mode: using relative path /api')
   return '/api'
 }
 
@@ -20,20 +25,23 @@ const API_BASE_URL = getAPIBaseUrl()
 
 // 打印 API 地址便于调试
 if (typeof window !== 'undefined') {
-  console.log('Translation API Base URL:', API_BASE_URL)
-  console.log('Current URL:', window.location.href)
+  console.log('🔧 Translation API configured:', {
+    baseUrl: API_BASE_URL,
+    currentUrl: window.location.href,
+    mode: import.meta.env.DEV ? 'development' : 'production'
+  })
 }
 
 // 解析 JSON 错误处理
 async function parseJSON(response: Response) {
   const text = await response.text()
 
-  // 检查是否是 HTML（常见于错误页面）
+  // 检查是否是 HTML（常见于错误页面或路由配置错误）
   if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
     throw new Error(
       `Expected JSON but received HTML. Status: ${response.status}. ` +
-      `This might indicate the backend API is not running or the URL is incorrect. ` +
-      `API URL was: ${response.url}`
+      `This indicates the API route is not properly configured. ` +
+      `Check: 1) Is backend running? 2) Is EdgeOne route correct? 3) API URL: ${response.url}`
     )
   }
 
@@ -52,8 +60,7 @@ export class TranslationAPI {
   static async translate(request: TranslationRequest): Promise<TranslationResponse> {
     try {
       const url = `${API_BASE_URL}/translate`
-      console.log('🔄 Calling translation API:', url)
-      console.log('📤 Request:', request)
+      console.log('📤 Translation request:', { url, text: request.text?.substring(0, 30) })
 
       const response = await fetch(url, {
         method: 'POST',
@@ -65,24 +72,22 @@ export class TranslationAPI {
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ Translation API error:', response.status, errorText)
+        console.error('❌ API error:', response.status, errorText?.substring(0, 200))
 
-        // 更详细的错误提示
         if (errorText.includes('<!') || errorText.includes('<html')) {
           throw new Error(
             `Backend API returned HTML (Status: ${response.status}). ` +
-            `Please verify: 1) Backend is running on ${API_BASE_URL} ` +
-            `2) Nginx/proxy is correctly configured 3) Check server logs`
+            `Please verify: 1) Backend is deployed 2) EdgeOne routes are configured correctly`
           )
         }
-        throw new Error(`Translation API error: ${response.statusText}. Details: ${errorText}`)
+        throw new Error(`Translation API error: ${response.statusText}. ${errorText?.substring(0, 100)}`)
       }
 
       const data = await parseJSON(response)
-      console.log('✅ Translation result:', data)
+      console.log('✅ Translation success:', data.translatedText?.substring(0, 30))
       return data
     } catch (error) {
-      console.error('❌ Translation API call failed:', error)
+      console.error('❌ Translation failed:', error)
       throw error
     }
   }
@@ -108,14 +113,14 @@ export class TranslationAPI {
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ Batch translation API error:', response.status, errorText)
-        throw new Error(`Batch translation API error: ${response.statusText}. Details: ${errorText}`)
+        console.error('❌ Batch translation error:', response.status, errorText?.substring(0, 200))
+        throw new Error(`Batch translation API error: ${response.statusText}`)
       }
 
       const data = await parseJSON(response)
       return data.translatedTexts
     } catch (error) {
-      console.error('❌ Batch translation API call failed:', error)
+      console.error('❌ Batch translation failed:', error)
       throw error
     }
   }
