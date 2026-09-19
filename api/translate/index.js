@@ -62,7 +62,24 @@ async function callTencentCloudAPI(secretId, secretKey, params) {
   });
 }
 
+const getCORSHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+});
+
 exports.main_handler = async (event, context) => {
+  // 处理 OPTIONS 预检请求
+  if (event.httpMethod === 'OPTIONS' || event.requestContext?.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: getCORSHeaders(),
+      body: '',
+    };
+  }
+
   try {
     // 获取腾讯云凭证（从环境变量）
     const secretId = process.env.TENCENT_CLOUD_SECRET_ID;
@@ -71,7 +88,7 @@ exports.main_handler = async (event, context) => {
     if (!secretId || !secretKey) {
       return {
         statusCode: 503,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getCORSHeaders(),
         body: JSON.stringify({ error: 'Credentials not configured' })
       };
     }
@@ -82,7 +99,7 @@ exports.main_handler = async (event, context) => {
     if (!text || !sourceLanguage || !targetLanguage) {
       return {
         statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getCORSHeaders(),
         body: JSON.stringify({ error: 'Missing required fields' })
       };
     }
@@ -98,7 +115,7 @@ exports.main_handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getCORSHeaders(),
       body: JSON.stringify({
         translatedText: result.TargetText || '',
         sourceLanguage,
@@ -109,7 +126,7 @@ exports.main_handler = async (event, context) => {
     console.error('Translation error:', error);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: getCORSHeaders(),
       body: JSON.stringify({ error: error.message })
     };
   }
