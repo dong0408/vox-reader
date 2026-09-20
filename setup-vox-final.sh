@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # vox-reader 完整部署方案
-# 前端在 /var/www/vox_reader (dist)
-# 后端在 /home/vox_reader (完整项目)
+# 前端在 /var/www/vox-reader (dist)
+# 后端在 /home/vox-reader (完整项目)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -28,8 +28,8 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 
 # 配置
-FRONTEND_DIR="/var/www/vox_reader"
-BACKEND_DIR="/home/vox_reader"
+FRONTEND_DIR="/var/www/vox-reader"
+BACKEND_DIR="/home/vox-reader"
 BACKEND_PORT=3000
 
 print_info "部署结构:"
@@ -84,7 +84,7 @@ server {
 
     # 前端静态文件
     location / {
-        root /var/www/vox_reader;
+        root /var/www/vox-reader;
         index index.html;
         try_files \$uri /index.html;
 
@@ -174,7 +174,7 @@ echo ""
 print_info "现在的架构:"
 echo "   用户 → http://你的IP (端口 80)"
 echo "        ↓ (Nginx)"
-echo "   ├─ 静态文件 → /var/www/vox_reader"
+echo "   ├─ 静态文件 → /var/www/vox-reader"
 echo "   └─ /api/* → 代理到 localhost:3000"
 echo ""
 print_info "后端启动方式:"
