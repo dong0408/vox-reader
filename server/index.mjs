@@ -17,31 +17,29 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
-// 配置 CORS - 支持所有来源或特定域名
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000',
-  'https://localhost:5173',
-  'https://localhost:3000',
-  // 腾讯云相关域名 - 根据实际情况添加
-  process.env.VITE_API_BASE_URL?.replace('/api', '') || '',
-];
-
+// 配置 CORS - 支持所有来源
 app.use(cors({
-  origin: function (origin, callback) {
-    // 如果没有 origin 或在允许列表中，则允许
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      // 生产环境中打印警告但仍然允许（便于调试）
-      console.warn(`CORS warning: Request from ${origin}`);
-      callback(null, true);
-    }
-  },
-  credentials: true,
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false,
+  maxAge: 3600,
 }));
+
+// 添加额外的CORS响应头 - 确保浏览器接受跨域请求
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Max-Age', '3600');
+
+  // 处理 OPTIONS 预检请求
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 // Translation service initialization
 let translationConfigured = false;
